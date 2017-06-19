@@ -1,60 +1,66 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+//server.js
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+//BASE SETUP
+//====================================
 
-var app = express();
+//call the packages we need
+var express             = require('express');
+var app                 = express();
+var bodyParser          = require('body-parser');
+var morgan              = require('morgan');
+var fs                  = require('fs');
+var path                = require('path');
+var fileStreamRotator   = require('file-stream-rotator');
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+//call routers modules
+var indexRouter = require('./routes/index.js');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+//LOG
+var logDir = path.join(__dirname, 'logs');
+
+//ensure log directory exists
+fs.existsSync(logDir) || fs.mkdirSync(logDir);
+//create a rotating write stream
+var accessLogStream = fileStreamRotator.getStream({
+    date_format: 'YYYYMMDD',
+    filename: path.join(logDir, 'access-%DATE%.log'),
+    frequency: 'daily',
+    verbose: true
+});
+
+
+//APP CONFIG
+//====================================
+//configure app to use BodyParser();
+//this will let us get the data form a POST
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//log module
+app.use(morgan('short'));
+app.use(morgan('combined', {
+    stream: accessLogStream
+}));
 
-app.use('/', routes);
-app.use('/users', users);
+var port = process.env.PORT || 8080;  //set port
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+
+//REGISTER OUR ROUTES
+//===================================
+app.use('/', indexRouter);
+
+//ERROR HANDLE
+app.use(function(req, res, next){
+    res.status(404).send('Not Found');
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
+//START THE SERVER
+//====================================
+app.listen(port, function(){
 
-module.exports = app;
+    console.log('server is listening to port ' + port);
+});
