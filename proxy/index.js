@@ -1,0 +1,1 @@
+exports.Posts = require('./Posts.js');

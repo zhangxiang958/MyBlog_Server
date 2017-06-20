@@ -24,4 +24,12 @@ router.get('/', function(req, res) {
   // res.send('routers index');
 });
 
+router.get('/md', function(req, res) {
+  fs.readFile('markdowns/当我在谈论前端监控时我在谈什么.md', function(err, data) {
+    var html = marked(data.toString());
+    res.send(html);
+  });
+  // res.send('routers index');
+});
+
 module.exports = router;
