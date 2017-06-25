@@ -14,7 +14,24 @@ module.exports = function(router){
   router.route('/posts')
 
     .get(function(req, res){
-      var id = req.query.id;
-      
+      var page = req.query.page;
+      var perpage = req.query.perpage;
+
+      Proxy.Posts.getPostsList(page, perpage, function(err, postsList){
+        
+        if(err) {
+          
+          res.send({
+            code: 1,
+            msg: err
+          });
+        } else {
+
+          res.send({
+            code: 0,
+            data: postsList
+          });
+        }
+      });
     });
 }

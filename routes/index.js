@@ -3,6 +3,8 @@ var router = express.Router();
 var marked = require('marked');
 var fs = require('fs');
 
+//router
+var Post = require('./posts.js');
 
 marked.setOptions({
   renderer: new marked.Renderer(),
@@ -12,7 +14,10 @@ marked.setOptions({
   pedantic: false,
   sanitize: true,
   smartLists: true,
-  smartypants: false
+  smartypants: false,
+  highlight: function (code) {
+    return require('highlight.js').highlightAuto(code).value;
+  }
 });
 
 /* GET home page. */
@@ -31,5 +36,7 @@ router.get('/md', function(req, res) {
   });
   // res.send('routers index');
 });
+
+Post(router);
 
 module.exports = router;

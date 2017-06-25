@@ -1,4 +1,4 @@
-var db      = require('./datbase.js');
+var db      = require('./database.js');
 var Schema  = db.Mongoose.Schema;
 
 var PostsSchema = new Schema({

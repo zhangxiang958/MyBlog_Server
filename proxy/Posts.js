@@ -20,3 +20,18 @@ exports.getPostDetail = function(id, callback){
   })
   .exec(callabck);
 }
+
+/**
+ * @page 第几页
+ * @perpage 一页有多少文章
+ */
+
+exports.getPostsList = function(page, perpage, callback){
+  PostModel.find()
+          .sort({
+            publish_date: -1
+          })
+          .skip(parseInt(page - 1) * perpage)
+          .limit(parseInt(perpage))
+          .exec(callback);
+}
